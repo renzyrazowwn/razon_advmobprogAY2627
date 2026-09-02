@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../constants.dart';
 import '../models/product.dart';
 import '../widgets/custom_text.dart';
+import '../services/cart_service.dart';
 
 // displays the selected product and product details
 class ProductDetailScreen extends StatelessWidget {
@@ -24,10 +26,10 @@ class ProductDetailScreen extends StatelessWidget {
         padding: EdgeInsets.all(16.r),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          // Enhancement 2
+
           // displays the details of the selected product
           children: [
-          // displays the product image
+            // displays the product image
             Container(
               width: double.infinity,
               height: 280.h,
@@ -210,6 +212,58 @@ class ProductDetailScreen extends StatelessWidget {
               child: CustomText(
                 text: product.returnPolicy,
                 fontSize: 14.sp,
+              ),
+            ),
+
+            SizedBox(height: 20.h),
+
+            // Enhancement 3
+            // add to Cart Button
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                // Enhancement 3
+                // adds the selected product to the user's cart.
+                onPressed: () async {
+                  try {
+                    // uses the shared demo user id
+                    await CartService().addToCart(
+                      userId: demoUserId,
+                      products: [
+                        {
+                          'id': product.id,
+                          'quantity': 1,
+                        },
+                      ],
+                    );
+
+                    if (!context.mounted) return;
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          'Product added to cart.',
+                        ),
+                      ),
+                    );
+                  } catch (e) {
+                    if (!context.mounted) return;
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          'Failed to add product to cart.',
+                        ),
+                      ),
+                    );
+                  }
+                },
+                icon: const Icon(
+                  Icons.shopping_cart_outlined,
+                ),
+                label: const Text(
+                  'Add to Cart',
+                ),
               ),
             ),
 

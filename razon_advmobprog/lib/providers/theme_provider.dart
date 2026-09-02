@@ -20,7 +20,6 @@ class ThemeProvider with ChangeNotifier {
         useMaterial3: true,
       );
 
-  // Enhancement 3
   // switches the current theme 
   void toggleTheme() {
     _isDark = !_isDark;

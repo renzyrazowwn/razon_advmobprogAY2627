@@ -39,7 +39,6 @@ class SettingsScreen extends StatelessWidget {
               trailing: Switch(
                 value: themeProvider.isDark,
 
-                // Enhancement 3
                 // toggles the global light/dark theme
                 onChanged: (_) {
                   themeProvider.toggleTheme();

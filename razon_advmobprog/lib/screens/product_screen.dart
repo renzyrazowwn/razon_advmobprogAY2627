@@ -28,7 +28,6 @@ class _ProductScreenState extends State<ProductScreen> {
 
     _productsFuture = ProductService().getAllProducts();
 
-    // Enhancement 1
     // updates the search results when the user types
     _searchController.addListener(() {
       setState(() {
@@ -43,7 +42,6 @@ class _ProductScreenState extends State<ProductScreen> {
     super.dispose();
   }
 
-  // Enhancement 1
   // filters products based on the search keyword
   List<Product> _filterProducts(List<Product> products) {
     if (_searchQuery.isEmpty) {
@@ -68,7 +66,6 @@ class _ProductScreenState extends State<ProductScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Enhancement 1
             // search bar used to filter the product list
             TextField(
               controller: _searchController,
@@ -170,7 +167,6 @@ class _ProductScreenState extends State<ProductScreen> {
                         borderRadius: BorderRadius.circular(12.r),
                       ),
 
-                      // Enhancement 2
                       // opens the details page when a product is selected
                       child: InkWell(
                         onTap: () {
