@@ -6,6 +6,8 @@ import 'package:provider/provider.dart';
 import 'providers/theme_provider.dart';
 import 'screens/home_screen.dart';
 import 'screens/settings_screen.dart';
+import 'screens/signin_screen.dart';
+import 'screens/splash_screen.dart';
 
 // loads environment variables before starting the app
 Future<void> main() async {
@@ -49,11 +51,16 @@ class RazonAdvMobProg extends StatelessWidget {
 
             title: 'E-Commerce App',
 
-            // opens the home screen when the app starts
-            initialRoute: '/home',
+            // Enhancement 1
+            // opens the splash screen first, which checks
+            // persistent authentication before deciding whether
+            // to go to /signin or /home.
+            initialRoute: '/splash',
 
             // defines the app navigation routes
             routes: {
+              '/splash': (context) => const SplashScreen(),
+              '/signin': (context) => const SignInScreen(),
               '/home': (context) => const HomeScreen(),
               '/settings': (context) => const SettingsScreen(),
             },

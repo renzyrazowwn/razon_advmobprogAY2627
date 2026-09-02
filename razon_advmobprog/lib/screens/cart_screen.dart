@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-import '../constants.dart';
 import '../models/cart.dart';
 import '../services/cart_service.dart';
 import '../services/product_service.dart';
@@ -13,8 +12,8 @@ class CartScreen extends StatefulWidget {
     super.key,
 
     // Enhancement 3
-    // defaults to the shared demo user id
-    this.userId = demoUserId,
+    // defaults to the shared preferences userId
+    required this.userId,
   });
 
   final int userId;
@@ -39,7 +38,7 @@ class _CartScreenState extends State<CartScreen> {
         CartService().getCartsByUserId(widget.userId);
   }
 
-  // opens the existing ProductDetailScreen when a cart product is selected.
+  // opens the existing ProductDetailScreen when a cart product is selected
   Future<void> _openProductDetail(
     BuildContext context,
     CartProduct cartProduct,
@@ -124,46 +123,6 @@ class _CartScreenState extends State<CartScreen> {
           return ListView(
             padding: EdgeInsets.all(16.r),
             children: [
-              // Cart summary.
-              Card(
-                child: Padding(
-                  padding: EdgeInsets.all(16.r),
-                  child: Row(
-                    mainAxisAlignment:
-                        MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment:
-                            CrossAxisAlignment.start,
-                        children: [
-                          CustomText(
-                            text: 'Cart #${cart.id}',
-                            fontSize: 18.sp,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          SizedBox(height: 4.h),
-                          CustomText(
-                            text:
-                                '${cart.totalProducts} products • '
-                                '${cart.totalQuantity} items',
-                            fontSize: 13.sp,
-                          ),
-                        ],
-                      ),
-
-                      CustomText(
-                        text:
-                            '\$${cart.discountedTotal.toStringAsFixed(2)}',
-                        fontSize: 17.sp,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              SizedBox(height: 15.h),
-
               CustomText(
                 text: 'Cart Items',
                 fontSize: 18.sp,

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-import '../constants.dart';
 import '../models/product.dart';
 import '../widgets/custom_text.dart';
 import '../services/cart_service.dart';
+import '../services/user_service.dart';
 
 // displays the selected product and product details
 class ProductDetailScreen extends StatelessWidget {
@@ -226,9 +226,14 @@ class ProductDetailScreen extends StatelessWidget {
                 // adds the selected product to the user's cart.
                 onPressed: () async {
                   try {
-                    // uses the shared demo user id
+                    // Enhancement 3
+                    // reads the actual signed-in user's id from
+                    // SharedPreferences (saved at login by
+                    // UserService), instead of a hardcoded id.
+                    final currentUser = await UserService().getUser();
+
                     await CartService().addToCart(
-                      userId: demoUserId,
+                      userId: currentUser.id,
                       products: [
                         {
                           'id': product.id,
