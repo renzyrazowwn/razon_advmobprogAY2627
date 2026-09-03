@@ -4,7 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../services/user_service.dart';
 import '../widgets/custom_text.dart';
 
-// Enhancement 1:
+// Enhancement 1
 // Splash screen shown on app launch. Checks whether a
 // user session is already saved (persistent authentication)
 // and routes straight to /home if so, otherwise to /signin.
@@ -30,7 +30,7 @@ class _SplashScreenState extends State<SplashScreen> {
   // Logged in -> /home with the saved user data as arguments.
   // Not logged in -> /signin.
   Future<void> _checkAuthentication() async {
-    await Future.delayed(const Duration(seconds: 10));
+    await Future.delayed(const Duration(seconds: 8));
 
     final loggedIn = await _userService.isLoggedIn();
 
@@ -56,16 +56,18 @@ class _SplashScreenState extends State<SplashScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // app logo mark
+            // UI Enhancement
+            // logo mark restyled as a circle filled with the
+            // brand royal blue, matching the sign-in screen.
             Container(
-              width: 90.w,
-              height: 90.w,
+              width: 100.w,
+              height: 100.w,
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20.r),
-                color: Theme.of(context).colorScheme.primaryContainer,
+                shape: BoxShape.circle,
+                color: Theme.of(context).colorScheme.primary,
               ),
               child: Padding(
-                padding: EdgeInsets.all(14.r),
+                padding: EdgeInsets.all(18.r),
                 child: Image.asset(
                   'assets/images/nubdexchange_logo.png',
                   fit: BoxFit.contain,
@@ -73,7 +75,7 @@ class _SplashScreenState extends State<SplashScreen> {
                     return Icon(
                       Icons.storefront_outlined,
                       size: 44.sp,
-                      color: Theme.of(context).colorScheme.onPrimaryContainer,
+                      color: Colors.white,
                     );
                   },
                 ),
@@ -83,17 +85,26 @@ class _SplashScreenState extends State<SplashScreen> {
             SizedBox(height: 20.h),
 
             CustomText(
-              text: 'NUBD Exchange',
-              fontSize: 18.sp,
+              text: 'NU Bulldogs Exchange',
+              fontSize: 30.sp,
               fontWeight: FontWeight.w600,
             ),
 
             SizedBox(height: 32.h),
 
+            // UI Enhancement
+            // spinner explicitly colored royal blue so it's
+            // consistent with the button/logo branding rather
+            // than whatever the default theme color happens to be.
             SizedBox(
               width: 24.w,
               height: 24.w,
-              child: const CircularProgressIndicator(strokeWidth: 2.5),
+              child: CircularProgressIndicator(
+                strokeWidth: 2.5,
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  Theme.of(context).colorScheme.primary,
+                ),
+              ),
             ),
           ],
         ),

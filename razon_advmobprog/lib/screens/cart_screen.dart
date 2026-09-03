@@ -10,9 +10,10 @@ import 'product_detail_screen.dart';
 class CartScreen extends StatefulWidget {
   const CartScreen({
     super.key,
-
     // Enhancement 3
-    // defaults to the shared preferences userId
+    // no default - the caller (home_screen.dart) always
+    // supplies the id of the currently signed-in user, so
+    // this always renders that user's own cart.
     required this.userId,
   });
 
@@ -23,29 +24,20 @@ class CartScreen extends StatefulWidget {
 }
 
 class _CartScreenState extends State<CartScreen> {
-
-  // Enhancement 1
-  // stores the cart retrieved from the API
   late Future<List<Cart>> _cartFuture;
 
   @override
   void initState() {
     super.initState();
-
-    // Enhancement 1
-    // retrieves the cart for the selected user
-    _cartFuture =
-        CartService().getCartsByUserId(widget.userId);
+    _cartFuture = CartService().getCartsByUserId(widget.userId);
   }
 
-  // opens the existing ProductDetailScreen when a cart product is selected
   Future<void> _openProductDetail(
     BuildContext context,
     CartProduct cartProduct,
   ) async {
     try {
-      final product =
-          await ProductService().getProductById(
+      final product = await ProductService().getProductById(
         cartProduct.id,
       );
 
@@ -54,8 +46,7 @@ class _CartScreenState extends State<CartScreen> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) =>
-              ProductDetailScreen(
+          builder: (context) => ProductDetailScreen(
             product: product,
           ),
         ),
@@ -80,21 +71,15 @@ class _CartScreenState extends State<CartScreen> {
         title: const Text('My Cart'),
         centerTitle: true,
       ),
-
       body: FutureBuilder<List<Cart>>(
         future: _cartFuture,
-
         builder: (context, snapshot) {
-
-          // loading state
-          if (snapshot.connectionState ==
-              ConnectionState.waiting) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
               child: CircularProgressIndicator(),
             );
           }
 
-          // error state
           if (snapshot.hasError) {
             return Center(
               child: Padding(
@@ -109,7 +94,6 @@ class _CartScreenState extends State<CartScreen> {
 
           final carts = snapshot.data ?? [];
 
-          // empty state
           if (carts.isEmpty) {
             return const Center(
               child: Text(
@@ -128,7 +112,6 @@ class _CartScreenState extends State<CartScreen> {
                 fontSize: 18.sp,
                 fontWeight: FontWeight.bold,
               ),
-
               SizedBox(height: 8.h),
 
               // displays every product in the cart
@@ -145,14 +128,12 @@ class _CartScreenState extends State<CartScreen> {
                           cartProduct,
                         );
                       },
-
                       child: Padding(
                         padding: EdgeInsets.all(10.r),
                         child: Row(
                           children: [
                             ClipRRect(
-                              borderRadius:
-                                  BorderRadius.circular(
+                              borderRadius: BorderRadius.circular(
                                 10.r,
                               ),
                               child: Image.network(
@@ -160,9 +141,7 @@ class _CartScreenState extends State<CartScreen> {
                                 width: 80.w,
                                 height: 80.h,
                                 fit: BoxFit.cover,
-
-                                errorBuilder:
-                                    (_, __, ___) {
+                                errorBuilder: (_, __, ___) {
                                   return Container(
                                     width: 80.w,
                                     height: 80.h,
@@ -170,51 +149,38 @@ class _CartScreenState extends State<CartScreen> {
                                         .colorScheme
                                         .surfaceContainerHighest,
                                     child: const Icon(
-                                      Icons
-                                          .image_not_supported_outlined,
+                                      Icons.image_not_supported_outlined,
                                     ),
                                   );
                                 },
                               ),
                             ),
-
                             SizedBox(width: 12.w),
-
                             Expanded(
                               child: Column(
-                                crossAxisAlignment:
-                                    CrossAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   CustomText(
-                                    text:
-                                        cartProduct.title,
+                                    text: cartProduct.title,
                                     fontSize: 15.sp,
-                                    fontWeight:
-                                        FontWeight.bold,
+                                    fontWeight: FontWeight.bold,
                                     maxLines: 2,
-                                    overflow:
-                                        TextOverflow.ellipsis,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
-
                                   SizedBox(height: 5.h),
-
                                   CustomText(
                                     text:
                                         '\$${cartProduct.price.toStringAsFixed(2)}',
                                     fontSize: 14.sp,
                                   ),
-
                                   SizedBox(height: 5.h),
-
                                   CustomText(
-                                    text:
-                                        'Quantity: ${cartProduct.quantity}',
+                                    text: 'Quantity: ${cartProduct.quantity}',
                                     fontSize: 13.sp,
                                   ),
                                 ],
                               ),
                             ),
-
                             const Icon(
                               Icons.chevron_right,
                             ),
@@ -228,14 +194,14 @@ class _CartScreenState extends State<CartScreen> {
 
               SizedBox(height: 8.h),
 
+              // Total Summary Card at the bottom
               Card(
                 child: Padding(
                   padding: EdgeInsets.all(16.r),
                   child: Column(
                     children: [
                       Row(
-                        mainAxisAlignment:
-                            MainAxisAlignment.spaceBetween,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           const Text('Total'),
                           Text(
@@ -243,12 +209,9 @@ class _CartScreenState extends State<CartScreen> {
                           ),
                         ],
                       ),
-
                       SizedBox(height: 8.h),
-
                       Row(
-                        mainAxisAlignment:
-                            MainAxisAlignment.spaceBetween,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           const Text(
                             'Discounted Total',

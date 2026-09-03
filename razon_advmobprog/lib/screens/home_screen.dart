@@ -36,7 +36,10 @@ class _HomeScreenState extends State<HomeScreen> {
     _loadUser();
   }
 
-  // Loads the currently logged-in user from SharedPreferences.
+  // Enhancement 3
+  // Loads the currently logged-in user from SharedPreferences
+  // (via UserService/User model) so the Profile tab's app bar
+  // title can show their first name instead of a static label.
   Future<void> _loadUser() async {
     try {
       final user = await _userService.getUser();

@@ -81,6 +81,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   CircleAvatar(
                     radius: 36.r,
                     backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                    // Enhancement 3
+                    // shows the user's actual DummyJSON avatar
+                    // (from the saved User model) when available,
+                    // falling back to the initials otherwise.
                     backgroundImage: user.image.isNotEmpty ? NetworkImage(user.image) : null,
                     child: user.image.isEmpty
                         ? CustomText(
