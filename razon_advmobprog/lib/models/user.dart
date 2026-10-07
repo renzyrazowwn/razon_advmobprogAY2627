@@ -1,8 +1,5 @@
-// Enhancement 3:
-// User model for the logged-in DummyJSON user. Mirrors the
-// fields user_service.dart already saves to/reads from
-// SharedPreferences (id, username, email, firstName, lastName,
-// gender, image, accessToken, refreshToken, token).
+// Enhancement 3
+// user model for the logged-in DummyJSON user
 class User {
   final int id;
   final String username;
@@ -26,10 +23,8 @@ class User {
     required this.refreshToken,
   });
 
-  // full display name, e.g. "Emily Johnson"
   String get fullName => '$firstName $lastName'.trim();
 
-  // two-letter initials for the avatar circle, e.g. "EJ"
   String get initials {
     final first = firstName.isNotEmpty ? firstName[0] : '';
     final last = lastName.isNotEmpty ? lastName[0] : '';
@@ -39,7 +34,6 @@ class User {
         : combined;
   }
 
-  // converts API/SharedPreferences data into a User object
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
       id: json['id'] ?? 0,

@@ -217,19 +217,11 @@ class ProductDetailScreen extends StatelessWidget {
 
             SizedBox(height: 20.h),
 
-            // Enhancement 3
-            // add to Cart Button
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
-                // Enhancement 3
-                // adds the selected product to the user's cart.
                 onPressed: () async {
                   try {
-                    // Enhancement 3
-                    // reads the actual signed-in user's id from
-                    // SharedPreferences (saved at login by
-                    // UserService), instead of a hardcoded id.
                     final currentUser = await UserService().getUser();
 
                     await CartService().addToCart(

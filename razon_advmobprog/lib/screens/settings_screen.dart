@@ -3,10 +3,37 @@ import 'package:provider/provider.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../providers/theme_provider.dart';
+import '../services/user_service.dart';
 
-// displays the settings options for the app
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
+
+  Future<void> _logout(BuildContext context) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Log out'),
+        content: const Text('Are you sure you want to log out?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('Log out'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    await UserService().logout();
+
+    if (!context.mounted) return;
+    Navigator.pushNamedAndRemoveUntil(context, '/signin', (route) => false);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,6 +71,16 @@ class SettingsScreen extends StatelessWidget {
                   themeProvider.toggleTheme();
                 },
               ),
+            ),
+          ),
+
+          // Lab Act 5 - Enhancement 3: Logout -> back to login
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.logout),
+              title: const Text('Log out'),
+              subtitle: const Text('Sign out and return to the login screen'),
+              onTap: () => _logout(context),
             ),
           ),
         ],

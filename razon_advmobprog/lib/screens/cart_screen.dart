@@ -10,10 +10,6 @@ import 'product_detail_screen.dart';
 class CartScreen extends StatefulWidget {
   const CartScreen({
     super.key,
-    // Enhancement 3
-    // no default - the caller (home_screen.dart) always
-    // supplies the id of the currently signed-in user, so
-    // this always renders that user's own cart.
     required this.userId,
   });
 
@@ -194,7 +190,6 @@ class _CartScreenState extends State<CartScreen> {
 
               SizedBox(height: 8.h),
 
-              // Total Summary Card at the bottom
               Card(
                 child: Padding(
                   padding: EdgeInsets.all(16.r),

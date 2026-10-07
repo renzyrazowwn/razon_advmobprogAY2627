@@ -21,12 +21,12 @@ class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
   final PageController _pageController = PageController();
 
-  // Stores the name of the currently logged-in user.
+  // stores the name of the currently logged-in user
   String _userName = 'Profile';
   final UserService _userService = UserService();
 
   // Enhancement 3
-  // The userId of the currently signed-in user.
+  // the userId of the currently signed-in user
   int _userId = 0;
   bool _userIdResolved = false;
 
@@ -37,9 +37,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // Enhancement 3
-  // Loads the currently logged-in user from SharedPreferences
-  // (via UserService/User model) so the Profile tab's app bar
-  // title can show their first name instead of a static label.
+  // loads the currently logged-in user from SharedPreferences
   Future<void> _loadUser() async {
     try {
       final user = await _userService.getUser();
@@ -58,8 +56,6 @@ class _HomeScreenState extends State<HomeScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    // Enhancement 3
-    // Only resolve the route arguments once.
     if (!_userIdResolved) {
       final args = ModalRoute.of(context)?.settings.arguments;
 
@@ -132,7 +128,7 @@ class _HomeScreenState extends State<HomeScreen> {
           controller: _pageController,
 
           // Enhancement 3
-          // CartScreen receives the ID of the currently signed-in user.
+          // CartScreen receives the ID of the currently signed-in user
           children: <Widget>[
             const ProductScreen(),
             CartScreen(userId: _userId),

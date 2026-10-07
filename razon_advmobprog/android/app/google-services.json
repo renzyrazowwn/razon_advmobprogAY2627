@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "195245432333",
+    "project_id": "advmobprog-firebase-9b3cf",
+    "storage_bucket": "advmobprog-firebase-9b3cf.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:195245432333:android:c6c7034c7bd6902c193f44",
+        "android_client_info": {
+          "package_name": "com.example.razon_advmobprog"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDO_e7x0pL436XKgHODwpLPBie_RBix8cg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

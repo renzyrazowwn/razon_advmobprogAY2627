@@ -6,9 +6,9 @@ import '../providers/theme_provider.dart';
 import '../widgets/custom_text.dart';
 
 // Enhancement 2
-// implements UserService and the login
-// logic, validates the form, calls loginUser, persists the
-// session via saveUserData, then routes to /home
+// DummyJSON vs Firebase Auth
+// DummyJSON uses username + POST /auth/login
+// Firebase uses email + UserService.signIn (FirebaseAuth SDK)
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
 
@@ -24,10 +24,11 @@ class _SignInScreenState extends State<SignInScreen> {
 
   bool _isLoading = false;
 
-  // UI Enhancement
-  // controls whether the password field's text is masked;
-  // toggled by the eye icon added to the password field.
   bool _obscurePassword = true;
+
+  LoginType _loginType = LoginType.dummyJson;
+
+  bool get _isFirebase => _loginType == LoginType.firebase;
 
   @override
   void dispose() {
@@ -36,9 +37,6 @@ class _SignInScreenState extends State<SignInScreen> {
     super.dispose();
   }
 
-  // Enhancement 2:
-  // Validates the form, calls UserService().loginUser, saves
-  // the session, then navigates to /home with the user data.
   void _login() async {
     UserService userService = UserService();
 
@@ -48,13 +46,25 @@ class _SignInScreenState extends State<SignInScreen> {
 
     if (_formKey.currentState!.validate()) {
       try {
-        final response = await userService.loginUser(
-          _usernameController.text,
-          _passwordController.text,
-        );
+        Map<String, dynamic> response;
 
-        // Save user data to SharedPreferences.
-        await userService.saveUserData(response);
+        if (_isFirebase) {
+          // Firebase: signInWithEmailAndPassword
+          await userService.signIn(
+            email: _usernameController.text.trim(),
+            password: _passwordController.text,
+          );
+          response = await userService.getUserData();
+        } else {
+          // DummyJSON: POST /auth/login
+          response = await userService.loginUser(
+            _usernameController.text,
+            _passwordController.text,
+          );
+
+          // save user data to SharedPreferences.
+          await userService.saveUserData(response);
+        }
 
         if (!mounted) return;
         setState(() {
@@ -72,7 +82,9 @@ class _SignInScreenState extends State<SignInScreen> {
           _isLoading = false;
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Login failed: ${e.toString()}')),
+          SnackBar(
+            content: Text('Login failed: ${UserService.errorMessage(e)}'),
+          ),
         );
       }
     } else {
@@ -86,17 +98,14 @@ class _SignInScreenState extends State<SignInScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 24.w),
+        child: SingleChildScrollView(
+          padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 40.h),
           child: Form(
             key: _formKey,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // UI Enhancement
-                // logo mark restyled as a circle filled with the
-                // brand royal blue, matching the app icon.
                 Container(
                   width: 100.w,
                   height: 100.w,
@@ -125,18 +134,41 @@ class _SignInScreenState extends State<SignInScreen> {
                   fontSize: 13.sp,
                 ),
 
-                SizedBox(height: 28.h),
+                SizedBox(height: 20.h),
+                SizedBox(
+                  width: double.infinity,
+                  child: SegmentedButton<LoginType>(
+                    segments: const [
+                      ButtonSegment(
+                        value: LoginType.dummyJson,
+                        label: Text('DummyJSON'),
+                      ),
+                      ButtonSegment(
+                        value: LoginType.firebase,
+                        label: Text('Firebase'),
+                      ),
+                    ],
+                    selected: {_loginType},
+                    onSelectionChanged: (selection) {
+                      setState(() {
+                        _loginType = selection.first;
+                        _usernameController.clear();
+                      });
+                    },
+                  ),
+                ),
 
-                // UI Enhancement
-                // fields now sit on a white fill (rather than
-                // transparent/off-white) so they stand out from
-                // the off-white page background, with the focus
-                // border in royal blue.
+                SizedBox(height: 20.h),
                 TextFormField(
                   controller: _usernameController,
+                  keyboardType: _isFirebase
+                      ? TextInputType.emailAddress
+                      : TextInputType.text,
                   decoration: InputDecoration(
-                    labelText: 'Username',
-                    prefixIcon: const Icon(Icons.person_outline),
+                    labelText: _isFirebase ? 'Email' : 'Username',
+                    prefixIcon: Icon(
+                      _isFirebase ? Icons.email_outlined : Icons.person_outline,
+                    ),
                     filled: true,
                     fillColor: Colors.white,
                     border: OutlineInputBorder(
@@ -153,17 +185,20 @@ class _SignInScreenState extends State<SignInScreen> {
                   ),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
-                      return 'Username is required';
+                      return _isFirebase
+                          ? 'Email is required'
+                          : 'Username is required';
+                    }
+                    if (_isFirebase &&
+                        !RegExp(r'^[\w.+-]+@[\w-]+(\.[\w-]+)+$')
+                            .hasMatch(value.trim())) {
+                      return 'Enter a valid email';
                     }
                     return null;
                   },
                 ),
 
                 SizedBox(height: 14.h),
-
-                // UI Enhancement
-                // added a toggle eye icon (suffixIcon) so the
-                // password can be shown/hidden on demand.
                 TextFormField(
                   controller: _passwordController,
                   obscureText: _obscurePassword,
@@ -206,8 +241,6 @@ class _SignInScreenState extends State<SignInScreen> {
 
                 SizedBox(height: 24.h),
 
-                // UI Enhancement
-                // Login button uses the brand royal blue.
                 SizedBox(
                   width: double.infinity,
                   height: 46.h,
@@ -231,6 +264,23 @@ class _SignInScreenState extends State<SignInScreen> {
                           )
                         : const Text('Log in'),
                   ),
+                ),
+
+                SizedBox(height: 12.h),
+
+                // Lab Act 5 - Enhancement 2: go to signup_screen.dart
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CustomText(
+                      text: "Don't have an account?",
+                      fontSize: 13.sp,
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.pushNamed(context, '/signup'),
+                      child: const Text('Sign up'),
+                    ),
+                  ],
                 ),
               ],
             ),
