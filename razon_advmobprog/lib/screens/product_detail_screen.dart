@@ -222,17 +222,21 @@ class ProductDetailScreen extends StatelessWidget {
               child: ElevatedButton.icon(
                 onPressed: () async {
                   try {
-                    final currentUser = await UserService().getUser();
+                    final userData = await UserService().getUserData();
 
-                    await CartService().addToCart(
-                      userId: currentUser.id,
-                      products: [
-                        {
-                          'id': product.id,
-                          'quantity': 1,
-                        },
-                      ],
-                    );
+                    // Firebase accounts have no DummyJSON user id, so
+                    // their cart is saved in Firestore instead
+                    if (userData['loginType'] == LoginType.firebase.name) {
+                      await CartService().addProductForFirebaseUser(
+                        userData['uid'],
+                        product,
+                      );
+                    } else {
+                      await CartService().addProductForDummyJsonUser(
+                        userData['id'],
+                        product,
+                      );
+                    }
 
                     if (!context.mounted) return;
 

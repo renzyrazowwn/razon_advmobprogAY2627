@@ -10,7 +10,6 @@ import '../widgets/custom_text.dart';
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
 
-  // Enhancement 2
   // password validation
   static String? validatePassword(String? value) {
     if (value == null || value.isEmpty) return 'Password is required';

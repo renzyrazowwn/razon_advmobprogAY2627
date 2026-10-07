@@ -32,6 +32,28 @@ class Cart {
     );
   }
 
+  // returns a copy of the cart with new products and recalculated totals
+  Cart copyWithProducts(List<CartProduct> newProducts) {
+    final newTotal =
+        newProducts.fold<double>(0, (sum, product) => sum + product.total);
+    final newDiscountedTotal = newProducts.fold<double>(
+      0,
+      (sum, product) => sum + product.discountedTotal,
+    );
+    final newTotalQuantity =
+        newProducts.fold<int>(0, (sum, product) => sum + product.quantity);
+
+    return Cart(
+      id: id,
+      products: newProducts,
+      total: double.parse(newTotal.toStringAsFixed(2)),
+      discountedTotal: double.parse(newDiscountedTotal.toStringAsFixed(2)),
+      userId: userId,
+      totalProducts: newProducts.length,
+      totalQuantity: newTotalQuantity,
+    );
+  }
+
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -92,5 +114,22 @@ class CartProduct {
       'discountedTotal': discountedTotal,
       'thumbnail': thumbnail,
     };
+  }
+
+  // returns a copy of the product with a new quantity and recalculated totals
+  CartProduct copyWithQuantity(int newQuantity) {
+    final newTotal = price * newQuantity;
+    final newDiscountedTotal = newTotal * (1 - discountPercentage / 100);
+
+    return CartProduct(
+      id: id,
+      title: title,
+      price: price,
+      quantity: newQuantity,
+      total: double.parse(newTotal.toStringAsFixed(2)),
+      discountPercentage: discountPercentage,
+      discountedTotal: double.parse(newDiscountedTotal.toStringAsFixed(2)),
+      thumbnail: thumbnail,
+    );
   }
 }

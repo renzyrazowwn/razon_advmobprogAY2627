@@ -8,11 +8,6 @@ import '../services/user_service.dart';
 import '../widgets/custom_text.dart';
 import 'signup_screen.dart';
 
-// Enhancement 3
-// renders the logged-in user's profile using the User model
-// and UserService and renders their cart based on that saved user's id
-// Fetches user data via UserService().getUserData() and shows user details depending on the LoginType
-// allows update username, change password, delete account
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
@@ -43,12 +38,44 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _logout() async {
-    await _userService.logout();
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        icon: const Icon(Icons.logout),
+        title: const Text('Log out'),
+        content: const Text('Are you sure you want to log out?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('Log out'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true || !mounted) return;
+
+    try {
+      await _userService.logout();
+    } catch (e) {
+      if (!mounted) return;
+      _showMessage(UserService.errorMessage(e));
+      return;
+    }
+
     if (!mounted) return;
+    final messenger = ScaffoldMessenger.of(context);
     Navigator.pushNamedAndRemoveUntil(
       context,
       '/signin',
       (route) => false,
+    );
+    messenger.showSnackBar(
+      const SnackBar(content: Text('You have been logged out.')),
     );
   }
 
@@ -192,8 +219,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   CircleAvatar(
                     radius: 36.r,
                     backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-                    // Enhancement 3
-                    // shows the user's actual DummyJSON avatar
                     backgroundImage: user.image.isNotEmpty ? NetworkImage(user.image) : null,
                     child: user.image.isEmpty
                         ? CustomText(
@@ -214,7 +239,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     fontSize: 13.sp,
                   ),
                   SizedBox(height: 6.h),
-                  // Lab Act 5 - Enhancement 3: shows the LoginType
                   Chip(
                     label: Text(
                       isFirebase ? 'Firebase account' : 'DummyJSON account',

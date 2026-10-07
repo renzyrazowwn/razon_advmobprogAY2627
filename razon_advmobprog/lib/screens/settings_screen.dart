@@ -12,6 +12,7 @@ class SettingsScreen extends StatelessWidget {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
+        icon: const Icon(Icons.logout),
         title: const Text('Log out'),
         content: const Text('Are you sure you want to log out?'),
         actions: [
@@ -27,12 +28,24 @@ class SettingsScreen extends StatelessWidget {
       ),
     );
 
-    if (confirm != true) return;
+    if (confirm != true || !context.mounted) return;
 
-    await UserService().logout();
+    final messenger = ScaffoldMessenger.of(context);
+
+    try {
+      await UserService().logout();
+    } catch (e) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(UserService.errorMessage(e))),
+      );
+      return;
+    }
 
     if (!context.mounted) return;
     Navigator.pushNamedAndRemoveUntil(context, '/signin', (route) => false);
+    messenger.showSnackBar(
+      const SnackBar(content: Text('You have been logged out.')),
+    );
   }
 
   @override
@@ -74,7 +87,6 @@ class SettingsScreen extends StatelessWidget {
             ),
           ),
 
-          // Lab Act 5 - Enhancement 3: Logout -> back to login
           Card(
             child: ListTile(
               leading: const Icon(Icons.logout),

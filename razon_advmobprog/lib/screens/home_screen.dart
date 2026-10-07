@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'product_screen.dart';
 import 'cart_screen.dart';
 import 'profile_screen.dart';
+import 'chat_screen.dart';
 
 import '../widgets/custom_text.dart';
 import '../services/user_service.dart';
@@ -25,8 +26,6 @@ class _HomeScreenState extends State<HomeScreen> {
   String _userName = 'Profile';
   final UserService _userService = UserService();
 
-  // Enhancement 3
-  // the userId of the currently signed-in user
   int _userId = 0;
   bool _userIdResolved = false;
 
@@ -36,8 +35,6 @@ class _HomeScreenState extends State<HomeScreen> {
     _loadUser();
   }
 
-  // Enhancement 3
-  // loads the currently logged-in user from SharedPreferences
   Future<void> _loadUser() async {
     try {
       final user = await _userService.getUser();
@@ -67,9 +64,31 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  // Enhancement 2
-  // Displays the Chat FloatingActionButton.
-  // The button is hidden when the current screen is Cart.
+  // Enhancement 1, 2 & 3
+  // chat FloatingActionButton opens the Chat List UI
+  Future<void> _openChat() async {
+    final loginType = await _userService.getLoginType();
+
+    if (!mounted) return;
+
+    if (loginType != LoginType.firebase ||
+        _userService.currentUser == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Chat is only available for Firebase accounts.',
+          ),
+        ),
+      );
+      return;
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const ChatScreen()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return PopScope(
@@ -78,15 +97,9 @@ class _HomeScreenState extends State<HomeScreen> {
         floatingActionButton: _selectedIndex == 1
             ? null
             : FloatingActionButton(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text(
-                        'Chat feature opened.',
-                      ),
-                    ),
-                  );
-                },
+                // Lab Act 6
+                // redirects to the Chat List UI
+                onPressed: _openChat,
                 child: const Icon(
                   Icons.chat,
                 ),
@@ -127,8 +140,6 @@ class _HomeScreenState extends State<HomeScreen> {
           physics: const NeverScrollableScrollPhysics(),
           controller: _pageController,
 
-          // Enhancement 3
-          // CartScreen receives the ID of the currently signed-in user
           children: <Widget>[
             const ProductScreen(),
             CartScreen(userId: _userId),

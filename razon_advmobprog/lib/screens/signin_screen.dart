@@ -268,7 +268,6 @@ class _SignInScreenState extends State<SignInScreen> {
 
                 SizedBox(height: 12.h),
 
-                // Lab Act 5 - Enhancement 2: go to signup_screen.dart
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [

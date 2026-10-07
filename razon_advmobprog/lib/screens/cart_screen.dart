@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../models/cart.dart';
 import '../services/cart_service.dart';
 import '../services/product_service.dart';
+import '../services/user_service.dart';
 import '../widgets/custom_text.dart';
 import 'product_detail_screen.dart';
 
@@ -21,11 +22,137 @@ class CartScreen extends StatefulWidget {
 
 class _CartScreenState extends State<CartScreen> {
   late Future<List<Cart>> _cartFuture;
+  final CartService _cartService = CartService();
+  Cart? _cart;
+
+  // set when the logged-in user is a Firebase account (cart in Firestore)
+  String? _firebaseUid;
+
+  static const int _maxQuantity = 99;
 
   @override
   void initState() {
     super.initState();
-    _cartFuture = CartService().getCartsByUserId(widget.userId);
+    _cartFuture = _loadCart();
+  }
+
+  Future<List<Cart>> _loadCart() async {
+    final userData = await UserService().getUserData();
+
+    if (userData['loginType'] == LoginType.firebase.name) {
+      _firebaseUid = userData['uid'];
+      return _cartService.getFirebaseCart(_firebaseUid!);
+    }
+
+    return _cartService.getCartsByUserId(widget.userId);
+  }
+
+  void _setQuantity(Cart cart, CartProduct cartProduct, int quantity) {
+    final products = cart.products
+        .map((p) => p.id == cartProduct.id ? p.copyWithQuantity(quantity) : p)
+        .toList();
+    _updateCart(cart.copyWithProducts(products));
+  }
+
+  Future<void> _decreaseQuantity(Cart cart, CartProduct cartProduct) async {
+    if (cartProduct.quantity > 1) {
+      _setQuantity(cart, cartProduct, cartProduct.quantity - 1);
+      return;
+    }
+
+    final remove = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Remove item'),
+        content: Text('Remove "${cartProduct.title}" from your cart?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('Remove'),
+          ),
+        ],
+      ),
+    );
+
+    if (remove != true || !mounted) return;
+
+    final products =
+        cart.products.where((p) => p.id != cartProduct.id).toList();
+    _updateCart(cart.copyWithProducts(products));
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('${cartProduct.title} removed from cart.')),
+    );
+  }
+
+  void _increaseQuantity(Cart cart, CartProduct cartProduct) {
+    if (cartProduct.quantity >= _maxQuantity) return;
+    _setQuantity(cart, cartProduct, cartProduct.quantity + 1);
+  }
+
+  void _updateCart(Cart cart) {
+    if (_firebaseUid != null) {
+      _cartService.saveFirebaseCart(_firebaseUid!, cart).catchError((_) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Unable to save your cart.')),
+        );
+      });
+    } else {
+      _cartService.saveEditedCart(widget.userId, cart);
+    }
+
+    setState(() {
+      _cart = cart;
+    });
+  }
+
+  Widget _quantitySelector(Cart cart, CartProduct cartProduct) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(color: colorScheme.outlineVariant),
+        borderRadius: BorderRadius.circular(20.r),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          IconButton(
+            visualDensity: VisualDensity.compact,
+            iconSize: 18.sp,
+            tooltip: cartProduct.quantity > 1 ? 'Decrease' : 'Remove',
+            icon: Icon(
+              cartProduct.quantity > 1 ? Icons.remove : Icons.delete_outline,
+              color: cartProduct.quantity > 1 ? null : colorScheme.error,
+            ),
+            onPressed: () => _decreaseQuantity(cart, cartProduct),
+          ),
+          SizedBox(
+            width: 28.w,
+            child: CustomText(
+              text: '${cartProduct.quantity}',
+              fontSize: 14.sp,
+              fontWeight: FontWeight.bold,
+              textAlign: TextAlign.center,
+            ),
+          ),
+          IconButton(
+            visualDensity: VisualDensity.compact,
+            iconSize: 18.sp,
+            tooltip: 'Increase',
+            icon: const Icon(Icons.add),
+            onPressed: cartProduct.quantity >= _maxQuantity
+                ? null
+                : () => _increaseQuantity(cart, cartProduct),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _openProductDetail(
@@ -93,12 +220,20 @@ class _CartScreenState extends State<CartScreen> {
           if (carts.isEmpty) {
             return const Center(
               child: Text(
-                'No cart found for this user.',
+                'Your cart is empty.',
               ),
             );
           }
 
-          final cart = carts.first;
+          final cart = _cart ?? carts.first;
+
+          if (cart.products.isEmpty) {
+            return const Center(
+              child: Text(
+                'Your cart is empty.',
+              ),
+            );
+          }
 
           return ListView(
             padding: EdgeInsets.all(16.r),
@@ -171,9 +306,12 @@ class _CartScreenState extends State<CartScreen> {
                                   ),
                                   SizedBox(height: 5.h),
                                   CustomText(
-                                    text: 'Quantity: ${cartProduct.quantity}',
-                                    fontSize: 13.sp,
+                                    text:
+                                        'Subtotal: \$${cartProduct.discountedTotal.toStringAsFixed(2)}',
+                                    fontSize: 12.sp,
                                   ),
+                                  SizedBox(height: 6.h),
+                                  _quantitySelector(cart, cartProduct),
                                 ],
                               ),
                             ),
@@ -195,6 +333,14 @@ class _CartScreenState extends State<CartScreen> {
                   padding: EdgeInsets.all(16.r),
                   child: Column(
                     children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text('Items'),
+                          Text('${cart.totalQuantity}'),
+                        ],
+                      ),
+                      SizedBox(height: 8.h),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
